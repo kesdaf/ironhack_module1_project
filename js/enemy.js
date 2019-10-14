@@ -1,32 +1,42 @@
 class Enemy{
     constructor(ctx){
         this.ctx = ctx
-        this.x = Math.random() * this.ctx.canvas.width
-        this.y = -15
-        this.w = 10
-        this.h = 5
+        this.w = 50
+        this.h = 25        
+        this.x = 5 + (Math.random() * this.ctx.canvas.width - this.w -5)
+        this.y = -50 * Math.random()
+
 
         this.color= Math.random()*10 >5 ?"white":"black"
         this.vx = 0
-        this.vy = 0.5
+        this.vy = 4
         this.vx0 = 0
-        this.vy0 = 0.5     
+        this.vy0 = 4    
         this.hitpoints = 1
         this.weapons =[new Weapon(this,this.color,true)]
 
         this.angle=0
         this.tick=0
+
+        this.img = new Image()
+        this.img.src = "img/enemy.png"
+        this.img.frames = 2
+        this.img.frameIndex = this.color === "black" ? 0:1        
     }
 
     draw(){
         this.ctx.fillStyle = this.color
-        this.ctx.rotate(this.angle)
-        this.ctx.fillRect(
+        this.ctx.drawImage(
+            this.img,
+            this.img.frameIndex * this.img.width / this.img.frames,
+            0,
+            this.img.width / this.img.frames,
+            this.img.height,
             this.x,
             this.y,
             this.w,
             this.h
-          ) 
+          );
         this.weapons.forEach(w => w.draw())
     }
 

@@ -4,9 +4,9 @@ class Bullet {
         this.x = x
         this.y = y
         if(direction){
-          this.vy = 3 
+          this.vy = 8 
         }else{
-          this.vy = -3  
+          this.vy = -8  
         }
         if(vy){
             this.vy =vy
@@ -21,22 +21,42 @@ class Bullet {
             this.vx0 = this.vx
             this.vx=0
         }
-        this.r = 2
+        this.r = 10
         this.damage =1
         this.color = color
         this.tick=0
+
+        this.img = new Image()
+        this.img.src = "img/bullet.png"
+        this.img.frames = 3
+        if(color === "black"){
+            this.img.frameIndex = 0
+        }else if(color === "white"){
+            this.img.frameIndex = 1
+        }else{
+            this.img.frameIndex = 2
+        }
+
+        this.visible =true
+
     }
     draw() {
-        this.ctx.beginPath()
-        this.ctx.fillStyle = this.color
-        this.ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2)
-        this.ctx.fill()
-        this.ctx.closePath()
+        this.ctx.drawImage(
+            this.img,
+            this.img.frameIndex * this.img.width / this.img.frames,
+            0,
+            this.img.width / this.img.frames,
+            this.img.height,
+            this.x,
+            this.y,
+            this.r,
+            this.r
+          );
     }
 
     move() {
 
-        if(this.objetive && this.tick%20 ===0 ){
+        if(this.objetive && this.tick%20 ===0 && this.tick<500 ){
             // this.tick=0
             this.vx = this.vx0
             if(this.x > this.objetive.x ){
@@ -54,8 +74,8 @@ class Bullet {
     }
 
     isVisible() {
-        return this.x > 0 && this.x < this.ctx.canvas.width
-            || this.y > 0 && this.y > this.ctx.canvas.height
+        return this.visible && (this.x > 0 && this.x < this.ctx.canvas.width
+            || this.y > 0 && this.y > this.ctx.canvas.height)
     }
 
     collide(el){

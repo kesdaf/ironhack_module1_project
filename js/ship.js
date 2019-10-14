@@ -1,12 +1,12 @@
 class Ship{
     constructor(ctx){
         this.ctx = ctx;
-        this.w = 10
-        this.h = 10
+        this.w = 50
+        this.h = 25
         this.x = (ctx.canvas.width - this.w)/2
         this.y = ctx.canvas.height - this.h -10
 
-        this.shield =(this.w > this.h ? this.w :this.h) + 2
+        this.shieldRadious =(this.w > this.h ? this.w :this.h)/2
         this.vy = 0
         this.vx = 0
 
@@ -14,7 +14,7 @@ class Ship{
         this.shipHit = false
         this.shipHitCounter = 0
         this.weapons=[new Weapon(this)]
-        this.weaponRelay = true
+        this.weaponRelay = 0
 
         this.actions = {
             right: false,
@@ -27,25 +27,41 @@ class Ship{
         this._setListeners()
         this.tick = 0
 
-        this.color="black"
+        this.shield="black"
         this.colorsIndex = 0
-        this.colors = ["rgba(0,0,0,0.3)","rgba(255,255,255,0.3)"]
+        this.colors = ["rgba(100,80,50,0.3)","rgba(255,255,255,0.3)"]
+
+        this.img = new Image()
+        this.img.src = "img/ship.png"
+        this.img.frames = 2
+        this.img.frameIndex = 1
     }
     
     draw(){
         if(this.shipHitCounter === 0 || this.shipHitCounter%2 ===0){
-            this.ctx.fillStyle ="black"
-            this.ctx.fillRect(
+            this.ctx.drawImage(
+                this.img,
+                this.img.frameIndex * this.img.width / this.img.frames,
+                0,
+                this.img.width / this.img.frames,
+                this.img.height,
                 this.x,
                 this.y,
                 this.w,
                 this.h
-            ) 
+              );
+            // this.ctx.fillStyle ="black"
+            // this.ctx.fillRect(
+            //     this.x,
+            //     this.y,
+            //     this.w,
+            //     this.h
+            // ) 
         }
           this.ctx.beginPath()
           this.ctx.fillStyle = this.colors[this.colorsIndex]
 
-          this.ctx.arc(this.x+this.w/2, this.y+this.h/2, this.shield, 0, Math.PI * 2)
+          this.ctx.arc(this.x+this.w/2, this.y+this.h/2, this.shieldRadious, 0, Math.PI * 2)
           this.ctx.fill()
           this.ctx.closePath()  
         
@@ -70,7 +86,7 @@ class Ship{
 
         if(this.shipHit ){
             this.shipHitCounter++
-            if(this.shipHitCounter >=15){
+            if(this.shipHitCounter >=20){
                 this.shipHit = false
                 this.shipHitCounter = 0
             }
@@ -81,30 +97,33 @@ class Ship{
 
     _applyActions() {
         if (this.actions.up) {
-          this.vy = -2;
+          this.vy = -5;
         } else if (this.actions.down){
-            this.vy =2;
+            this.vy =5;
         }else{
           this.vy = 0;
         }
         
         if (this.actions.left) {
-            this.vx = -2
+            this.vx = -5
         } else if (this.actions.right){
-            this.vx = 2
+            this.vx = 5
         }else{
             this.vx = 0
         }
 
         if(this.actions.shoot){
-            if (this.weaponRelay){
+            if (this.weaponRelay ===15){
+                this.weaponRelay=0
+            }
+            if(this.weaponRelay ===0){
                 this.weapons.forEach(w =>{
                     w.shoot()
                 })
-                this.weaponRelay = false
             }
+            this.weaponRelay++
         }else {
-            this.weaponRelay = true
+            this.weaponRelay = 0
         }
 
         if(this.actions.change){
@@ -112,10 +131,12 @@ class Ship{
             if(++this.colorsIndex === this.colors.length){
                 this.colorsIndex = 0
             }
-            if(this.color === "black"){
-                this.color = "white"
+            if(this.shield === "black"){
+                this.shield = "white"
+                this.img.frameIndex = 0
             } else {
-                this.color = "black"
+                this.shield = "black"
+                this.img.frameIndex = 1
             }
 
         }

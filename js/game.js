@@ -7,9 +7,10 @@ class Game {
         this.intervalId = null;
         this.tick =0
         this.noEnemies =true
-
-
+        this.bg = new Background(ctx)
         this.score=0
+        this.remainBullets=[]
+        this.tickMoreEnemies =0
       } 
       
     run() {
@@ -25,21 +26,24 @@ class Game {
     }
 
     _draw() {
-        this.ctx.fillStyle ="#58CCED"
-        this.ctx.fillRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
-        this.ctx.fillStyle ="black"
 
-       
-        this.ship.draw()
+        this.bg.draw() 
+
         this.enemies.forEach(e => e.draw())
-
-        if(this.noEnemies && this.tick >5){
+        this.remainBullets.forEach(b=>b.draw())
+        
+        if(this.noEnemies || 
+            this.enemies.length < 5 ||
+            this.tickMoreEnemies> 60*(15+Math.random()*5)){// && this.tick >5){
             this._addEnemies()
             this.noEnemies = false
+            this.tickMoreEnemies =0
         }
-        this.rewards.forEach(r => r.draw())
+        this.tickMoreEnemies++
+        this.rewards.forEach(r => r.draw())       
+        
+        this.ship.draw()
 
-        this.reards
         this.tick++
         if(this.tick >100){
             this.tick = 0
@@ -47,32 +51,43 @@ class Game {
     }
 
     _addEnemies(){
-        const number = Math.floor(Math.random()*10)
+        const number = Math.floor(Math.random()*15)
         for(let i=0; i<number; i++){
             let addEnemy
-            addEnemy = new directionEnemy(this.ctx,this.ship)
-            // if(this.score >0 && Math.random()*10 >3){
-            //     if(Math.random()*10 >3){
-            //         addEnemy = new directionEnemy(this.ctx,this.ship)
-            //     }else{
-            //        addEnemy = new secondEnemy(this.ctx) 
-            //     }
+             addEnemy = new boss(this.ctx,this.ship)
+            if(this.score >0 && i>5){
+                const rndEnemyselection = Math.random()*30 
+                if(rndEnemyselection<10){
+                    addEnemy = new directionEnemy(this.ctx,this.ship)
+                }else if(rndEnemyselection >28){
+                    addEnemy = new boss(this.ctx,this.ship)
+                }else if(rndEnemyselection <20){
+                    addEnemy = new SecondEnemy(this.ctx) 
+                }else{
+                    addEnemy = new ThirdEnemy(this.ctx,this.ship) 
+                }
                 
-            // }else{
-            //     addEnemy = new Enemy(this.ctx)
-            // } 
+            }else{
+                addEnemy = new Enemy(this.ctx)
+            } 
             this.enemies.push(addEnemy)            
         }
     }
     _removeEnemies(){
+        this.enemies.filter(e => !e.isVisible()).forEach(e =>{
+            e.weapons.forEach(w=>this.remainBullets = this.remainBullets.concat(w.bullets))
+        })
         this.enemies = this.enemies.filter(e => e.isVisible())
         if(this.enemies.length === 0){
             this.noEnemies =true;
         }
+        this.remainBullets.filter(b => b.isVisible())
     }
     _move(){
+        this.bg.move() 
         this.ship.move()
         this.enemies.forEach(e => e.move())
+        this.remainBullets.forEach(b=>b.move())
         this._hitEnemy()
         this._removeEnemies()
         this._hitShip()
@@ -89,9 +104,10 @@ class Game {
             w.bullets.forEach(b=>{
                 this.enemies.forEach(e =>{
                     if(b.collide(e)){
+                        b.visible =false
                         e.hit(b.damage)
                         hits++
-                        if(Math.random()*100 >10){
+                        if(e.hitpoints<=0 && Math.random()*100 >10){
                             this.rewards.push(new Reward(e))
                         }
                     }
@@ -105,7 +121,7 @@ class Game {
         this.rewards.forEach(r =>{
             if(r.collide(this.ship)){
                 r.visible = false
-                this.ship.hitpoints += 5;
+                r.reward(this.ship)
                 console.log(this.ship.hitpoints)
             }
         })
@@ -121,9 +137,11 @@ class Game {
             }
             e.weapons.forEach(w =>{
                 w.bullets.forEach(b=>{
-                    if(b.color != this.ship.color && b.collide(this.ship)){
-                        this.ship.hit(b.damage)
-                        console.log(this.ship.hitpoints)
+                    if(b.collide(this.ship)){
+                        b.visible =false
+                        if(b.color != this.ship.shield){
+                            this.ship.hit(b.damage)
+                        }
                     }
                 })
             })
