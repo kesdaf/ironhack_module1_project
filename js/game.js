@@ -48,6 +48,7 @@ class Game {
         if(this.tick >100){
             this.tick = 0
         }
+        this._drawMessage("Score " + Math.floor (this.score))
     }
 
     _addEnemies(){
@@ -155,12 +156,14 @@ class Game {
     _gameOver(){
         if(this.ship.hitpoints<=0){
             clearInterval(this.intervalId)
-            this._drawMessage("Your Final Score " + Math.floor (this.score))
+            document.getElementById("start-button").style.display = "block";
+           // this._drawMessage("Your Final Score " + Math.floor (this.score))
         }
     }
     _drawMessage(message) {
-        this.ctx.font = "10px sans-serif";
-        this.ctx.lineWidth = 1;
-       this.ctx.fillText(message, this.ctx.canvas.width/3, this.ctx.canvas.height -2);
+      //  this.ctx.font = "10px sans-serif";
+      //  this.ctx.lineWidth = 1;
+      this.ctx.fillStyle = "white";
+       this.ctx.fillText(message, 50,50 );
       }
 }
